@@ -42,5 +42,45 @@ CHIP ALU {
         ng; // 1 if (out < 0),  0 otherwise
 
     PARTS:
-   // Put you code here:
+    // Put you code here:
+
+    //zx control bit
+    Add16   (a[0]=zx, b=true, out=outzx);
+    And16   (a=outzx, b=x, out=outx);
+
+    //nx control bit
+    Not16   (in=outx, out=notx);
+    Mux16   (a=outx, b=notx, sel=nx, out=outx2);
+    
+    //zy control bit
+    Add16   (a[0]=zy, b=true, out=outzy);
+    And16   (a=outzy, b=y, out=outy);
+
+    //ny control bit
+    Not16   (in=outy, out=noty);
+    Mux16   (a=outy, b=noty, sel=ny, out=outy2);
+
+    //f control bit
+    Add16   (a=outx2, b=outy2, out=addf);
+    And16   (a=outx2, b=outy2, out=andf);
+    Mux16   (a=andf, b=addf, sel=f, out=outf);
+
+    //no control bit
+    Not16   (in=outf, out=notoutf);
+    Mux16   (a=outf, b=notoutf, sel=no, out=output);
+    And16   (a=output, b=output, out=out);
+
+    //set zr
+    And16   (a=output, b=output, out[0..7]=output1);
+    And16   (a=output, b=output, out[8..15]=output2);
+    Or8Way  (in=output1, out=notzero1);
+    Or8Way  (in=output2, out=notzero2);
+    Or      (a=notzero1, b=notzero2, out=notzeroboth);      
+    Not     (in=notzeroboth, out=zr);
+
+    //set ng
+    And16   (a=output, b=output, out[15]=output3);
+    And     (a=output3, b=true, out=ng);
+
+
 }
