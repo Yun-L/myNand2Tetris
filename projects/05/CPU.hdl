@@ -40,4 +40,137 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+
+	// Load instruction as value or use ALU output
+	
+	Mux16		( a = instruction,
+				  b = aluOut,
+				  sel = instruction[15], // i
+				  out = aOrAlu ); 
+
+	// Loading into A register and Sending to memory
+
+	Not ( in = instruction[15], out = ifA );
+
+	Or 		   ( a = ifA,
+			     b = instruction[5], // d1
+				 out = loadRegA );
+
+	ARegister  ( in = aOrAlu,
+			     load = loadRegA,
+				 out = regA );
+
+	And16	   ( a = regA,
+			     b = regA,
+				 out[0..14] = addressM );
+
+
+	// Load A value or M[A]
+
+	Mux16	   ( a = regA,
+			     b = inM,
+				 sel = instruction[12], // a
+				 out = aOrM );
+
+
+    // Loading into D register
+
+	And		   ( a = instruction[15], // i
+			     b = instruction[4],  // d2
+				 out = loadRegD );
+
+    DRegister  ( in = aluOut,
+			     load = loadRegD,
+				 out = regD );
+
+
+    // ALU inputs
+
+	And		   ( a = instruction[11],
+			   	 b = instruction[15],
+				 out = c1 );
+
+	And		   ( a = instruction[10],
+			     b = instruction[15],
+				 out = c2 );
+
+    And		   ( a = instruction[9],
+			     b = instruction[15],
+				 out = c3 );
+
+    And		   ( a = instruction[8],
+			     b = instruction[15],
+				 out = c4 );
+
+    And		   ( a = instruction[7],
+			     b = instruction[15],
+				 out = c5 );
+
+    And		   ( a = instruction[6],
+			     b = instruction[15],
+				 out = c6 );
+
+    ALU		   ( x = regD,
+			     y = aOrM,
+				 zx = c1,
+				 nx = c2,
+				 zy = c3,
+				 ny = c4,
+				 f = c5,
+				 no = c6,
+				 out = aluOut,
+				 zr = zr,
+				 ng = ng );
+				 
+
+	// Writing to Memory
+
+	And16	   ( a = aluOut,
+			     b = aluOut,
+				 out = outM );
+
+	And		   ( a = instruction[15], // i
+			     b = instruction[3],  // d3
+				 out = writeM );
+
+
+    // Program Counter
+
+	Or 		   ( a = ng,
+			     b = zr,
+				 out = ngOrZr );
+
+	Not		   ( in = ngOrZr,
+			     out = nl );
+
+    And		   ( a = ng,
+			     b = instruction[2],
+				 out = ifNg );
+
+    And		   ( a = zr,
+			     b = instruction[1],
+				 out = ifZr );
+
+    And		   ( a = nl,
+			     b = instruction[0],
+				 out = ifNl );
+
+	Or		   ( a = ifNg,
+			     b = ifZr,
+				 out = jumpCondTmp );
+
+    Or		   ( a = jumpCondTmp,
+			     b = ifNl,
+				 out = jumpCondTmp2 );
+
+	And		   ( a = jumpCondTmp2,
+			     b = instruction[15], // i
+				 out = jumpCond );
+
+    PC		   ( in = regA,
+			     load = jumpCond,
+				 inc = true,
+				 reset = reset,
+				 out[0..14] = pc );
+
 }
