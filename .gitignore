@@ -1,2 +1,5 @@
 ; folder containing software
 tools/*
+
+; emacs file backups
+*~
