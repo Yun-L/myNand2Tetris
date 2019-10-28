@@ -12,6 +12,7 @@ class Parser:
     def __del__(self):
         self.command_stream.close()
 
+    @property
     def command_type(self):
         """Returns string 'A_COMMAND' | 'C_COMMAND' | 'L_COMMAND'"""
         if self.current_command[0] == "@":
@@ -21,6 +22,7 @@ class Parser:
         else:
             return "C_COMMAND"
 
+    @property
     def symbol(self):
         if self.command_type == "C_COMMAND":
             raise Exception("Incorrect Type")
@@ -51,7 +53,7 @@ class Parser:
             return self.current_command[delim_ind1+1:]
         else:
             raise Exception("Line {}: Invalid Command [{}]".format(
-                self.current_command.tell(),
+                self.command_stream.tell(),
                 self.current_command))
 
     @property
@@ -67,10 +69,22 @@ class Parser:
 
     @property
     def has_more_commands(self):
-        if self.current_command == "":
-            return False
-        else:
-            return True
+        file_curr_line = self.command_stream.tell()
+
+        while True:
+
+            peek_next = self.command_stream.readline()
+
+            peek_next = self.__remove_comments(peek_next)
+
+            if peek_next.isspace():
+                continue
+            elif peek_next == "":
+                self.command_stream.seek(file_curr_line)
+                return False
+            else:
+                self.command_stream.seek(file_curr_line)
+                return True
 
     def advance(self):
         """
@@ -83,17 +97,12 @@ class Parser:
         while True:
             temp_cmd = self.command_stream.readline()
 
-            if temp_cmd == "":  # file objects return "" at EOF
-                break
-
             temp_cmd = self.__remove_comments(temp_cmd)
-            temp_cmd = temp_cmd.strip("\t ")
-            if temp_cmd.isspace():
-                continue
-            else:
+
+            if not temp_cmd.isspace():
                 break
 
-        self.current_command = temp_cmd
+        self.current_command = temp_cmd.strip("\t\n ")
         return
 
     def __remove_comments(self, cmd):

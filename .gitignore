@@ -1,5 +1,9 @@
 ; folder containing software
 tools/*
 
-; emacs file backups
+; emacs files
 *~
+.emacs.desktop.lock
+
+; other
+__pycache__/
