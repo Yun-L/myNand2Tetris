@@ -1,7 +1,7 @@
 __author__ = "Yun-L"
 
 
-class Parser:
+class Parser(object):
     """Breaks each assembly command into its underlying fields and symbols"""
 
     def __init__(self, filename):
@@ -47,6 +47,8 @@ class Parser:
 
         delim_ind1 = self.current_command.find("=")
         delim_ind2 = self.current_command.find(";")
+
+        # Exception of both jump and dest exist
         if delim_ind1 == -1 and delim_ind2 >= 0:
             return self.current_command[:delim_ind2]
         elif delim_ind1 >= 0 and delim_ind2 == -1:
