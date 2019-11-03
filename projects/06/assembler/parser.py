@@ -77,13 +77,14 @@ class Parser(object):
 
             peek_next = self.command_stream.readline()
 
-            peek_next = self.__remove_comments(peek_next)
-
-            if peek_next.isspace():
-                continue
-            elif peek_next == "":
+            if peek_next == "":
                 self.command_stream.seek(file_curr_line)
                 return False
+
+            peek_next = self.__remove_comments(peek_next)
+
+            if peek_next.isspace() or peek_next == "":
+                continue
             else:
                 self.command_stream.seek(file_curr_line)
                 return True
@@ -101,7 +102,7 @@ class Parser(object):
 
             temp_cmd = self.__remove_comments(temp_cmd)
 
-            if not temp_cmd.isspace():
+            if not temp_cmd.isspace() and len(temp_cmd) > 0:
                 break
 
         self.current_command = temp_cmd.strip("\t\n ")
