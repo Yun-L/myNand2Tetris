@@ -1,0 +1,100 @@
+* Ch. 7 VM 1: Stack Arithmetic
+- first steps to building a compiler
+- high-level -> intermediate code -> machine code
+- intermediate code runs on a VM
+** Background
+*** p2 The VM Paradigm 
+- two stage compilation model separates specifics of source high-level langage and target machine language
+- compilers only need to replace the vm for each hardware platform, rather than reimplementing the entire compiler
+- compilers for multiple high-level languages can share the same vm backend 
+*** p4 The Stack Machine Model
+- one option of where to put the operands and results of VM operations is on a stack
+- arithmetic and logical expressions can be converted into stack operations
+** VM Specification, Part 1
+*** p7 General
+- VM language will have 4 types of commands:
+  - Arith. cmds: arith and logical operations on stack
+  - Mem. access cmds: transfer data between stack and virtual memory
+  - prgm flow cmds: facilitate cond. and uncond. branching operations
+  - fn calling cmds: call fns and return from them
+- Program and cmd structure:
+  - vm commands appear in following formats: <command>, <command arg>, <command arg1 arg2>
+  - // are comments
+*** p8 Arithmetic and logical cmds
+| cmd | ret val                 | comment             |
+| add | x+y                     | int. addition       |
+| sub | x-y                     | int. subtraction    |
+| neg | -y                      | arithmetic negation |
+| eq  | true if x=y, else false | equality            |
+| gt  | true if x<y, else false | greater than        |
+| lt  | true if x<y, else false | less than           |
+| and | x and y                 | bit-wise and        |
+| or  | x or y                  | bit-wise or         |
+| not | not y                   | bit-wise not        |
+
+- vm represents true as -1 (0xFFFF) and false as 0 (0x0000)
+- 1 xor 1 == 0
+*** p10 Memory access cmds
+- see table 7 for memory segments seen by every VM function
+- memory access cmds are just push and pop cmds of a stack
+  - push <segment index> : push val of segment[index] onto the stack
+  - pop <segment index> : pop stack item and store in segment[index]
+*** p11 program flow cmds
+| label <symbol>   | label declaration       |
+| goto <symbol>    | unconditional branching |
+| if-goto <symbol> | conditional branching   |
+*** p11 function calling cmds
+| function <fn name> <nLocals> | function dec, must include num of fn's local vars |
+| call <fn name> <nArgs>       | fn invocation, must include num of arguments      |
+| return                       | return control back to call function              |
+
+- <fn name> is a symbol and <nLocals>, <nArgs> are non-negative integers
+** Implementation
+- VM program is a collection of one or more .vm files. order of .vm files does not matter
+*** RAM Usage
+- Hack computer consists of 32K 16-bit words. first 16K is general purpose RAM. next 16K has memory maps of I/O devices.
+| RAM addresses | Usage                                                        |
+|          0-15 | 16 virtual registers                                         |
+|        16-255 | static variables (of all the VM functions in the VM program) |
+|      256-2047 | Stack                                                        |
+|    2048-16483 | Heap (used to store objects and arrays)                      |
+|   16384-24575 | Memory mapped I/O                                            |
+
+- virtual registers
+| Register   | Name | Usage                                                   |
+| RAM[0]     | SP   | Stack pointer: points to next topmost location in stack |
+| RAM[1]     | LCL  | points to base of local segment                         |
+| RAM[2]     | ARG  | points to base of aurgemnt segment                      |
+| RAM[3]     | THIS | points to base of this segment(in heap)                 |
+| RAM[4]     | THAT | points to base of that segment(in heap)                 |
+| RAM[5-12]  | TEMP | hold contents of temp segment                           |
+| RAM[13-15] | (-)  | general purpose registers                               |
+*** Memory Segments Mapping
+- *local, argument, this, that:* these are mapped directly on the HACK RAM. Locations are maintained by keeping physical base addresses in dedicated registers (LCL, ARG, THIS, THAT). Any access to i'th location of any of these segments would be base+i where base is the address stored at one of these registers
+- *pointer, temp:* globally fixed and mapped directoly onti a fixed area in RAM. pointer segment is mapped to THIS and THAT registers (3, 4). temp segment is mapped to RAM[5-12]. pointer i would be i+3 in RAM. temp i would be i+5 in RAM.
+- *constant:* does not occupy any actual space. just supplies the constant i.
+- *static:* 
+*** Assembly Language Symbols
++----------------+-------------------------------------------------------------+
+| Symbol         | Usage                                                       |
++----------------+-------------------------------------------------------------+
+| SP, LCL, ARG,  |pre defined symbols point to stack top and base addresses of |
+|   THIS, THAT   |      virtual segments local, argument, this, and that       |
++----------------+-------------------------------------------------------------+
+|R13-R15         | Can be used for any purpose                                 |
+|                |                                                             |
++----------------+-------------------------------------------------------------+
+|"f.j" symbols   | each static variable j in f.vm is translated into the       |
+|                |assembly symbol f.j. eventuallly will be automatically       |
+|                |allocated RAM locations by the HACK assembler                |
++----------------+-------------------------------------------------------------+
+|Flow of control |The VM commands function, call, and label are handled by     |
+|symbols (labels)|generating symbolic labels, to be described in chapter 8     |
+|                |                                                             |
++----------------+-------------------------------------------------------------+
+*** Program Structure
+- VM translator should accept either a .vm file, or directory with .vm files
+- translates the input files into a single .asm file in the same directory 
+Parser:
+Code:
+Main:

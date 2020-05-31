@@ -1,6 +1,3 @@
-; folder containing software
-tools/*
-
 ; emacs files
 *~
 .emacs.desktop.lock
