@@ -101,13 +101,13 @@ class CodeWriter(object):
             if ind > 1 or ind < 0:
                 push_error(ind, segment)
             self.__write_asm([f"@R{3+ind}",
-                              "D=A"])
+                              "D=M"])
 
         elif segment == MemorySegType.M_TEMP:
             if ind < 0 or ind > 7:
                 push_error(ind, segment)
             self.__write_asm([f"@R{5+ind}",
-                              "D=A"])
+                              "D=M"])
 
         elif segment == MemorySegType.M_STATIC:
             self.__write_asm([f"@{self.file_name}.{ind}",
@@ -185,7 +185,8 @@ class CodeWriter(object):
                           "@R13",
                           "M=D",
                           "@SP",
-                          "M=M+1",
+                          "M=M-1",
+                          "A=M",
                           "D=M",
                           "@R13",
                           "A=M",
@@ -336,7 +337,7 @@ class CodeWriter(object):
 
 
 if __name__ == "__main__":
-
+    # Test
     cw = CodeWriter("test.asm", "test")
 
     cw.write_push_pop(CommandType.C_PUSH, MemorySegType.M_CONSTANT, 7)
