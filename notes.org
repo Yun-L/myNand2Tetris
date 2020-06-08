@@ -64,14 +64,14 @@
 | Register   | Name | Usage                                                   |
 | RAM[0]     | SP   | Stack pointer: points to next topmost location in stack |
 | RAM[1]     | LCL  | points to base of local segment                         |
-| RAM[2]     | ARG  | points to base of aurgemnt segment                      |
+| RAM[2]     | ARG  | points to base of argument segment                      |
 | RAM[3]     | THIS | points to base of this segment(in heap)                 |
 | RAM[4]     | THAT | points to base of that segment(in heap)                 |
 | RAM[5-12]  | TEMP | hold contents of temp segment                           |
 | RAM[13-15] | (-)  | general purpose registers                               |
 *** Memory Segments Mapping
 - *local, argument, this, that:* these are mapped directly on the HACK RAM. Locations are maintained by keeping physical base addresses in dedicated registers (LCL, ARG, THIS, THAT). Any access to i'th location of any of these segments would be base+i where base is the address stored at one of these registers
-- *pointer, temp:* globally fixed and mapped directoly onti a fixed area in RAM. pointer segment is mapped to THIS and THAT registers (3, 4). temp segment is mapped to RAM[5-12]. pointer i would be i+3 in RAM. temp i would be i+5 in RAM.
+- *pointer, temp:* globally fixed and mapped directoly onto a fixed area in RAM. pointer segment is mapped to THIS and THAT registers (3, 4). temp segment is mapped to RAM[5-12]. pointer i would be i+3 in RAM. temp i would be i+5 in RAM.
 - *constant:* does not occupy any actual space. just supplies the constant i.
 - *static:* 
 *** Assembly Language Symbols
@@ -98,3 +98,90 @@
 Parser:
 Code:
 Main:
+* Ch. 8 VM 2: Flow Control
+- introduce new stack-based mechanisms designed to handle nested subroutine calls (procedures, methods, functions)
+- extends and finishes the VM translator from ch. 7. Will be used as a backend for the compiler in future chapters
+- stack processing can also be used for dynamic memory management, parameter passing, and recursion.
+** Background
+- will be adding two final sets of commands: *program flow* commands for branching and *function* commands for handling subroutine calls.
+*** Program Flow
+- conditional jumps: using stack's top element, jump to specified dest. if not zero; otherwise execute next cmd
+- can specify an address to jump to but can also use labels if symbolic labels are allowed.
+*** Subroutine Calls
+- subroutines must handle:
+  - parameter passing, and optionally return a value from the subroutine
+  - allocating memory for local variables of subroutine, and freeing the memory.
+  - jumping to execute the subroutines code
+  - jumping back to the original address after the subroutine terminates
+- These must be handled taking into account that subroutines can be nested. In our case we will also support recursion (each recursion level must be executed independently of the other calls)
+*** Stack-Based Implementation
+- much like the fundamental commands, nested subroutine execution also follows a LIFO structure
+**** Return address
+- one implementation is to save the return address right before the subroutine is called and retrieve it right after the subroutine exits.
+- the return address can be pushed and popped from the stack.
+**** Parameter passing
+- parameters can also be pushed onto the stack for the subroutine to pop
+- a return value can be pushed back onto the stack when the subroutine finished
+**** Local variables
+- these can also be stored on the stack
+- this strategy handles nested/recursive subroutines well since the call-stack is also a LIFO model
+** VM Specification, Part 2
+*** Program flow commands
++-------------+-------------------------------------------------------+
+| *label c*   | labels function's current location in function's      |
+|             |code. c is a string                                    |
++-------------+-------------------------------------------------------+
+| *goto c*    | jumps to the c label. c must be in the same function  |
++-------------+-------------------------------------------------------+
+| *if-goto c* | conditionally jumps to the c label. top most value in |
+|             |                         stack                         |
+|             |               is popped and jumps to c                |
+|             |                if value is not zero. c                |
+|             |                  must be in the same                  |
+|             |                       function                        |
++-------------+-------------------------------------------------------+
+
+*** Function commands
++--------------+------------------------------------------------+
+| function f n | signals start of code of a function named f,   |
+|              |with n local variables                          |
++--------------+------------------------------------------------+
+| call f m     | call function f, stating that m arguments have |
+|              |            been pushed to the stack            |
++--------------+------------------------------------------------+
+| return       | return to calling function                     |
++--------------+------------------------------------------------+
+
+*** The calling protocol
+- calling function perspective:
+  1. push all argumetns onto stack
+  2. invoke the called function f "call f"
+  3. function's return value appears at top of stack
+  4. all memory segments (arguments, locals) are the same as before the call
+- called function perspective:
+  1. when called, the argument segment has been initialized with values by the caller. local variables have also been allocated and initialized to zero. The stack is empty and the static segment is set to the static segment of the current file.
+  2. push return value onto the stack
+- VM implementation perspective:
+  1. when a function is called
+     - save return address and segment pointers of calling function
+     - allocate, initialize to zero, as many local variables needed
+     - set local and argument segments of called function
+     - transfer control to called function
+  2. when a function returns
+     - clear arguments and other junk from stack
+     - restore local, argument, this, that segments of the calling function
+     - transfer control back to calling function
+
+*** Initialization
+when VM starts or resets. the VM runs a bootstrapping function "Sys.init"
+
+** Implementation
+*** The Global Stack
+- system memory of the VM is implemented by maintaining a global stack.
+- when a function is called, a new block is added to the global stack (consisting of arguments, pointers, local variables, empty working stack)
+*** Standard Mapping
+- see pg. 12-13
+*** Bootstrap code
+- should initialize stack pointer and call Sys.init
+- Sys.init should call main function of main program and enter infinite loop
+
