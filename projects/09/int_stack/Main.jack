@@ -1,0 +1,41 @@
+class Main {
+	  function void main() {
+	        var IntStack s;
+			var int input;
+			var bool loop;
+			var int last_seen;
+
+			let s = IntStack.new();
+			do s.visualize();
+
+			let loop = true;
+			while (loop) {
+				  do Output.moveCursor(22, 25);
+			      let input = Keyboard.readInt("");
+				  do Output.printInt(input);
+				  if (input > -1) {
+				  	    do s.push(input);
+				  }
+				  if (input = -1) {
+				        let last_seen = s.pop();
+				  }
+				  if (input = -2) {
+				        let last_seen = s.peek();
+				  }
+				  if (input = -3) {
+				        let loop = false;
+				  }
+				  do s.visualize();
+				  do Output.moveCursor(21, 25);
+				  do Output.printString("Last Seen: ");
+				  do Output.printInt(last_seen);
+		    }
+
+			do s.dispose();
+
+			do Screen.clearScreen();
+			do Output.moveCursor(0,0);
+			do Output.printString("End");
+			return;
+	  }
+}

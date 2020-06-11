@@ -1,0 +1,57 @@
+/** Integer Stack **/
+class IntStack {
+	  field IntStackEl head;
+
+	  constructor IntStack new() {
+	  		let head = null;
+			return this;
+	  }
+
+	  method void dispose() {
+	        if (~(head = null)) {
+			      do head.dispose();
+			}
+			do Memory.deAlloc(this);
+			return;
+	  }
+	  
+	  method void push(int num) {
+			let head = IntStackEl.new(num, head);
+			return;
+	  }
+
+	  method int pop() {
+			var int num;
+
+			if (head = null) {
+			      return -1;
+			}
+			let num = head.get_data();
+			let head = head.get_next();
+			return num;
+	  }
+
+	  method int peek() {
+	  		if (head = null) {
+			      return -1;
+			}
+			return head.get_data();
+	  }
+
+	  method void visualize() {
+	  		var IntStackEl curr;
+			do Screen.clearScreen();
+			do Output.moveCursor(0, 0);
+	  		if (head = null) {
+			      do Output.printString("Empty");
+				  return;
+			}
+			let curr = head;
+			while (~(curr = null)) {
+			      do Output.printInt(curr.get_data());
+				  do Output.println();
+				  let curr = curr.get_next();
+			}
+			return;
+	  }
+}

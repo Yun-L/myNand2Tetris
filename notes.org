@@ -184,4 +184,7 @@ when VM starts or resets. the VM runs a bootstrapping function "Sys.init"
 *** Bootstrap code
 - should initialize stack pointer and call Sys.init
 - Sys.init should call main function of main program and enter infinite loop
-
+* Ch. 9 The High Level Language
+- Start the process of building a Jack compiler and a run-time environment
+** Jack Formal Description
+- see pg.6

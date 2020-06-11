@@ -1,0 +1,26 @@
+class IntStackEl {
+	  field int data;
+	  field IntStackEl next;
+
+	  constructor IntStackEl new(int num, IntStackEl next_el) {
+	  		let data = num;
+			let next = next_el;
+			return this;
+	  }
+
+	  method void dispose() {
+	        if (~(next = null)) {
+			      do next.dispose();     
+			}
+			do Memory.deAlloc(this);
+			return;
+	  }
+
+	  method int get_data() {
+	        return data;
+	  }
+
+	  method IntStackEl get_next() {
+	  	    return next;
+	  }
+}
