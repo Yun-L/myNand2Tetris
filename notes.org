@@ -188,3 +188,12 @@ when VM starts or resets. the VM runs a bootstrapping function "Sys.init"
 - Start the process of building a Jack compiler and a run-time environment
 ** Jack Formal Description
 - see pg.6
+* Ch. 10 Compiler 1: Syntax Analysis
+** Background
+- Tokenizer -> Parser -> Code Generation
+- First group text into tokens
+*** Recursive Descent Parsing
+- top down approach
+- non terminals can be recursively parsed until terminals are reached
+** Specification
+- see pg. 216
