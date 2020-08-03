@@ -197,3 +197,34 @@ when VM starts or resets. the VM runs a bootstrapping function "Sys.init"
 - non terminals can be recursively parsed until terminals are reached
 ** Specification
 - see pg. 216
+* Ch. 11 Compiler 2: Code Generation
+- bridge the gap between the high-level language and the VM language
+** Background
+- compilation from high-level programs to a low-level language focuses on two issues: *data translation* and *command translation*
+*** Data Translation pg. 232
+- for each variable encountered, compiler must map it to a type
+- compiler must also manage the variable's scope and life cycle
+- a symbol table can accomplish this
+- everytime an new identifier is encountered for the first time, new entry is added to the table. Then when the same identifier is encountered again later in the source code, compiler looks up the entry in the table
+- example symbol table:
+| name      | type    | kind     | # |
+|-----------+---------+----------+---|
+| nAccounts | int     | static   | 0 |
+| status    | boolean | local    | 0 |
+| name      | String  | argument | 1 |
+| balance   | int     | field    | 2 |
+| sum       | int     | argument | 0 |
+- For example 'balance=balance+sum', from the symbol table compiler can translate balance to field 2 of current object, and sum to 0th argument of running subroutine
+- identifiers need to be associated with a scope, can be implemented with a list of hash-tables in order of inner scope to outer
+- *handling variables*
+- low level memory allocation of variables was delegated to the VM back-end
+- only need to worry about mapping variables to the virtual memory segments
+- *handling arrays*
+- arrays are almost always stored as sequences of consecutive memory locations
+- *handling objects*
+- pass the target object as the first hidden argument when a method is called
+- also when a method is called, compiler must ensure that the called method belongns to the class
+*** Commands Translation pg. 239
+- convert expression to parse tree, then traverse the parse tree and generate VM code
+- since the VM is stack based the tree can just be printed in postfix notation
+** Specification pg. 241

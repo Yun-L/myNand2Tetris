@@ -1,0 +1,11 @@
+push this 2
+push argument 1
+add
+push argument 0
+push argument 1
+push constant 1
+call Math.multiply 2
+call BankAccount.commision 2
+sub
+pop this 2
+return
