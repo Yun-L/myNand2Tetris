@@ -37,6 +37,7 @@ class Sys {
 		while (count_1 < duration) {
 			while (count_2 < 16000) {
 				while (count_3 < 32767) {
+					// takes about 2800000 cycles per millisecond
 					let count_3 = count_3 + 1;
 				}
 				let count_2 = count_2 + 1;

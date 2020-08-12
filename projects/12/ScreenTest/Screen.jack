@@ -28,11 +28,8 @@ class Screen {
 		while (row_count < 256) {
 			while (col_count < 512) {
 				do Screen.drawPixel(col_count, row_count);
-				let col_count = col_count + 1;
 			}
-			let row_count = row_count + 1;
 		}
-		do Screen.setColor(true);
 		return;
     }
 
@@ -182,9 +179,9 @@ class Screen {
 		}
 
 		let count_x = 0;
-		while (~(count_x > dx)) {
+		while (count_x < dx) {
 			let count_y = 0;
-			while (~(count_y > dy)) {
+			while (count_y < dy) {
 				do Screen.drawPixel(start_x + count_x, start_y + count_y);
 				let count_y = count_y + 1;
 			}
